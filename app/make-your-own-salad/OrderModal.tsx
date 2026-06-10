@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useActionState } from "react";
+import { placeOrder } from "@/actions/placeOrder";
+import { loginCustomer } from "@/actions/loginCustomer";
 
 type Ingredient = { name: string; price: number };
 
@@ -37,8 +38,9 @@ type Props = {
 };
 
 export default function OrderModal({ isOpen, onClose, order }: Props) {
-  const router = useRouter();
   const [step, setStep] = useState<Step>("auth");
+  const [showLogin, setShowLogin] = useState(false);
+  const [customerId, setCustomerId] = useState<number | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo>({
     name: "",
     email: "",
@@ -47,18 +49,36 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
   });
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
 
-  // Reset the tunnel each time the modal opens
+  const [loginState, loginAction, loginPending] = useActionState(loginCustomer, null);
+  const [orderState, orderAction, orderPending] = useActionState(placeOrder, null);
+
   useEffect(() => {
     if (isOpen) {
       setStep("auth");
+      setShowLogin(false);
+      setCustomerId(null);
       setPaymentMethod(null);
       setUserInfo({ name: "", email: "", phone: "", pickupTime: "" });
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (loginState?.customer) {
+      setCustomerId(loginState.customer.id);
+      setUserInfo((prev) => ({
+        ...prev,
+        name: loginState.customer!.name,
+        email: loginState.customer!.email,
+      }));
+      setStep("info");
+      setShowLogin(false);
+    }
+  }, [loginState]);
+
   if (!isOpen) return null;
 
   const baseItems = [order.veggie, order.protein, order.sauce];
+  const allItems = [...baseItems, ...(order.extra ? [order.extra] : [])];
   const baseTotal = baseItems.reduce((s, i) => s + i.price, 0);
   const extraTotal = order.extra?.price ?? 0;
   const total = baseTotal + extraTotal;
@@ -68,23 +88,6 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
 
   const stepIndex = STEPS.indexOf(step);
 
-  function handlePay() {
-    const items = [
-      order.veggie,
-      order.protein,
-      order.sauce,
-      ...(order.extra ? [order.extra] : []),
-    ];
-    const params = new URLSearchParams({
-      method: paymentMethod!,
-      name: userInfo.name,
-      pickup: userInfo.pickupTime,
-      total: total.toFixed(2),
-      items: JSON.stringify(items),
-    });
-    router.push(`/payment?${params.toString()}`);
-  }
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
@@ -93,14 +96,12 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-stone-100">
-          <div>
-            <h2 className="text-lg font-bold">
-              {step === "auth" && "Finaliser la commande"}
-              {step === "info" && "Vos coordonnées"}
-              {step === "recap" && "Récapitulatif de commande"}
-              {step === "payment" && "Mode de paiement"}
-            </h2>
-          </div>
+          <h2 className="text-lg font-bold">
+            {step === "auth" && "Finaliser la commande"}
+            {step === "info" && "Vos coordonnées"}
+            {step === "recap" && "Récapitulatif de commande"}
+            {step === "payment" && "Mode de paiement"}
+          </h2>
           <button
             onClick={onClose}
             aria-label="Fermer"
@@ -130,32 +131,81 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
               <p className="text-sm text-stone-500 mb-5">
                 Comment souhaitez-vous continuer ?
               </p>
-              <button
-                onClick={() => setStep("info")}
-                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-stone-200 hover:border-green-500 transition-colors text-left group"
-              >
-                <span className="text-2xl">👤</span>
-                <div>
-                  <p className="font-semibold group-hover:text-green-700 transition-colors">
-                    Continuer comme invité
-                  </p>
-                  <p className="text-sm text-stone-500">Rapide, sans compte nécessaire</p>
-                </div>
-                <span className="ml-auto text-stone-300 group-hover:text-green-500 transition-colors">→</span>
-              </button>
-              <button
-                onClick={() => setStep("info")}
-                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-stone-200 hover:border-green-500 transition-colors text-left group"
-              >
-                <span className="text-2xl">🔑</span>
-                <div>
-                  <p className="font-semibold group-hover:text-green-700 transition-colors">
-                    Se connecter
-                  </p>
-                  <p className="text-sm text-stone-500">Retrouvez vos commandes précédentes</p>
-                </div>
-                <span className="ml-auto text-stone-300 group-hover:text-green-500 transition-colors">→</span>
-              </button>
+
+              {!showLogin ? (
+                <>
+                  <button
+                    onClick={() => { setCustomerId(null); setStep("info"); }}
+                    className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-stone-200 hover:border-green-500 transition-colors text-left group"
+                  >
+                    <span className="text-2xl">👤</span>
+                    <div>
+                      <p className="font-semibold group-hover:text-green-700 transition-colors">
+                        Continuer comme invité
+                      </p>
+                      <p className="text-sm text-stone-500">Rapide, sans compte nécessaire</p>
+                    </div>
+                    <span className="ml-auto text-stone-300 group-hover:text-green-500 transition-colors">→</span>
+                  </button>
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-stone-200 hover:border-green-500 transition-colors text-left group"
+                  >
+                    <span className="text-2xl">🔑</span>
+                    <div>
+                      <p className="font-semibold group-hover:text-green-700 transition-colors">
+                        Se connecter
+                      </p>
+                      <p className="text-sm text-stone-500">Retrouvez vos commandes précédentes</p>
+                    </div>
+                    <span className="ml-auto text-stone-300 group-hover:text-green-500 transition-colors">→</span>
+                  </button>
+                </>
+              ) : (
+                <form action={loginAction} className="space-y-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowLogin(false)}
+                    className="text-sm text-stone-400 hover:text-stone-700 transition-colors"
+                  >
+                    ← Retour
+                  </button>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                      Email
+                    </label>
+                    <input
+                      required
+                      type="email"
+                      name="email"
+                      autoComplete="email"
+                      className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                      Mot de passe
+                    </label>
+                    <input
+                      required
+                      type="password"
+                      name="password"
+                      autoComplete="current-password"
+                      className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  {loginState?.error && (
+                    <p className="text-sm text-red-500">{loginState.error}</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={loginPending}
+                    className={`btn-primary w-full ${loginPending ? "opacity-60 cursor-not-allowed" : ""}`}
+                  >
+                    {loginPending ? "Connexion…" : "Se connecter"}
+                  </button>
+                </form>
+              )}
             </div>
           )}
 
@@ -234,7 +284,6 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
           {/* ── STEP 3 : recap ── */}
           {step === "recap" && (
             <div className="space-y-5">
-              {/* Contact recap */}
               <div className="bg-stone-50 rounded-xl p-4 text-sm space-y-1.5">
                 <p>
                   <span className="text-stone-500 w-20 inline-block">Nom</span>
@@ -254,7 +303,6 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
                 </p>
               </div>
 
-              {/* Base breakdown */}
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-stone-400 mb-2">
                   Ingrédients de base
@@ -273,7 +321,6 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
                 </div>
               </div>
 
-              {/* Extra breakdown */}
               {order.extra ? (
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-stone-400 mb-2">
@@ -294,7 +341,6 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
                 <p className="text-sm text-stone-400 italic">Aucun extra sélectionné</p>
               )}
 
-              {/* Grand total */}
               <div className="flex justify-between font-bold text-lg border-t-2 border-stone-200 pt-4">
                 <span>Total à payer</span>
                 <span className="text-green-700">€{total.toFixed(2)}</span>
@@ -313,7 +359,18 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
 
           {/* ── STEP 4 : payment ── */}
           {step === "payment" && (
-            <div className="space-y-4">
+            <form action={orderAction} className="space-y-4">
+              {/* Hidden inputs — collected data from previous steps */}
+              <input type="hidden" name="name" value={userInfo.name} />
+              <input type="hidden" name="email" value={userInfo.email} />
+              <input type="hidden" name="phone" value={userInfo.phone} />
+              <input type="hidden" name="pickupTime" value={userInfo.pickupTime} />
+              <input type="hidden" name="items" value={JSON.stringify(allItems)} />
+              {customerId !== null && (
+                <input type="hidden" name="customerId" value={customerId} />
+              )}
+              <input type="hidden" name="paymentMethod" value={paymentMethod ?? ""} />
+
               <p className="text-sm text-stone-500">
                 Sélectionnez votre mode de paiement pour finaliser.
               </p>
@@ -323,6 +380,7 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
                   return (
                     <button
                       key={method.id}
+                      type="button"
                       onClick={() => setPaymentMethod(method.id)}
                       className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
                         isActive
@@ -354,22 +412,29 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
                   <span>Total à payer</span>
                   <span className="text-green-700">€{total.toFixed(2)}</span>
                 </div>
+                {orderState?.errors?.general && (
+                  <p className="text-sm text-red-500 mb-3">{orderState.errors.general}</p>
+                )}
                 <div className="flex gap-3">
-                  <button onClick={() => setStep("recap")} className="btn-outline flex-1">
+                  <button
+                    type="button"
+                    onClick={() => setStep("recap")}
+                    className="btn-outline flex-1"
+                  >
                     Retour
                   </button>
                   <button
-                    disabled={!paymentMethod}
-                    onClick={handlePay}
+                    type="submit"
+                    disabled={!paymentMethod || orderPending}
                     className={`btn-primary flex-1 transition-opacity ${
-                      !paymentMethod ? "opacity-40 cursor-not-allowed" : ""
+                      !paymentMethod || orderPending ? "opacity-40 cursor-not-allowed" : ""
                     }`}
                   >
-                    Valider et Payer
+                    {orderPending ? "Enregistrement…" : "Valider et Payer"}
                   </button>
                 </div>
               </div>
-            </div>
+            </form>
           )}
 
         </div>
