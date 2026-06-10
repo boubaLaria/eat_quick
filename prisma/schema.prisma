@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum IngredientCategory {
+  VEGGIE
+  PROTEIN
+  SAUCE
+  EXTRA
+}
+
+enum OrderStatus {
+  PENDING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+model Ingredient {
+  id       Int                @id @default(autoincrement())
+  category IngredientCategory
+  label    String
+  price    Float
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  orderNumber   String      @unique
+  orderTime     DateTime    @default(now())
+  pickupTime    DateTime
+  customerName  String
+  customerEmail String
+  customerPhone String
+  items         String
+  status        OrderStatus @default(PENDING)
+  customerId    Int?
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+}

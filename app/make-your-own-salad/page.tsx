@@ -9,7 +9,7 @@ export default function MakeYourOwnPage() {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="mb-2">Build Your Salad</h1>
       <p className="text-stone-500 mb-10">
-        Choose your base, protein, toppings, and dressing. Minimum 3 ingredients.
+        Composez votre bowl sur mesure. Choisissez une veggie, une protéine, une sauce (obligatoires) et un extra (optionnel).
       </p>
       <SaladBuilder />
     </div>

@@ -1,5 +1,3 @@
-import { use } from "react";
-
 type Recipe = {
   id: number;
   name: string;
@@ -13,23 +11,18 @@ type Recipe = {
   rating: number;
 };
 
-function fetchRecipes(query?: string): Promise<Recipe[]> {
-  const url = query
-    ? `https://dummyjson.com/recipes/search?q=${encodeURIComponent(query)}`
-    : "https://dummyjson.com/recipes?limit=30";
+type Props = {
+  recipes: Recipe[];
+  query?: string;
+};
 
-  return fetch(url, { next: { revalidate: 3600 } })
-    .then((res) => res.json())
-    .then((data) => data.recipes ?? []);
-}
-
-export default function RecipeList({ query }: { query?: string }) {
-  const recipes = use(fetchRecipes(query));
-
+export default function RecipeList({ recipes, query }: Props) {
   if (recipes.length === 0) {
     return (
       <p className="text-stone-500 text-center py-16">
-        No recipes found for &ldquo;{query}&rdquo;.
+        {query
+          ? `Aucune recette trouvée pour « ${query} ».`
+          : "Aucune recette disponible."}
       </p>
     );
   }
@@ -61,9 +54,7 @@ export default function RecipeList({ query }: { query?: string }) {
               ))}
             </div>
             <div className="flex justify-between text-xs text-stone-400">
-              <span>
-                ⏱ {recipe.prepTimeMinutes + recipe.cookTimeMinutes} min
-              </span>
+              <span>⏱ {recipe.prepTimeMinutes + recipe.cookTimeMinutes} min</span>
               <span>⭐ {recipe.rating}</span>
               <span className="capitalize">{recipe.difficulty}</span>
             </div>

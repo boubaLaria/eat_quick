@@ -1,20 +1,55 @@
-import { Suspense } from "react";
 import RecipeList from "./RecipeList";
+import Pagination from "./Pagination";
 
 export const metadata = {
   title: "Our Recipes — EatQuick",
 };
 
-type Props = { searchParams: Promise<{ q?: string }> };
+const LIMIT = 10;
+
+type Recipe = {
+  id: number;
+  name: string;
+  cuisine: string;
+  difficulty: string;
+  prepTimeMinutes: number;
+  cookTimeMinutes: number;
+  caloriesPerServing: number;
+  tags: string[];
+  image: string;
+  rating: number;
+};
+
+type Props = {
+  searchParams: Promise<{ q?: string; page?: string }>;
+};
 
 export default async function OurRecipesPage({ searchParams }: Props) {
-  const { q } = await searchParams;
+  const { q, page: pageStr } = await searchParams;
+
+  // page param — clamp to 1 minimum
+  const page = Math.max(1, parseInt(pageStr ?? "1", 10) || 1);
+  const skip = (page - 1) * LIMIT;
+
+  // Build API URL — dummyjson supports skip + limit for both list and search
+  const url = q
+    ? `https://dummyjson.com/recipes/search?q=${encodeURIComponent(q)}&limit=${LIMIT}&skip=${skip}`
+    : `https://dummyjson.com/recipes?limit=${LIMIT}&skip=${skip}`;
+
+  const data = await fetch(url, { next: { revalidate: 3600 } }).then((r) =>
+    r.json()
+  );
+
+  const recipes: Recipe[] = data.recipes ?? [];
+  const total: number = data.total ?? 0;
+  const totalPages = Math.ceil(total / LIMIT);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <h1 className="mb-2">Recipe Inspirations</h1>
       <p className="text-stone-500 mb-8">Discover dishes we love from around the world.</p>
 
+      {/* Search form — submits only ?q=..., which resets page to 1 naturally */}
       <form method="get" className="mb-8 flex gap-3 max-w-md">
         <input
           type="text"
@@ -33,30 +68,35 @@ export default async function OurRecipesPage({ searchParams }: Props) {
         )}
       </form>
 
-      {q && (
-        <p className="text-sm text-stone-500 mb-6">
-          Results for: <strong className="text-stone-700">{q}</strong>
-        </p>
-      )}
+      {/* Context line */}
+      <div className="flex items-center justify-between mb-6 text-sm text-stone-500">
+        {q ? (
+          <p>
+            Résultats pour <strong className="text-stone-700">&laquo;{q}&raquo;</strong>
+            {total > 0 && ` — ${total} recette${total > 1 ? "s" : ""} trouvée${total > 1 ? "s" : ""}`}
+          </p>
+        ) : (
+          <p>{total} recettes disponibles</p>
+        )}
+        {totalPages > 1 && (
+          <p>
+            Page <strong>{page}</strong> / {totalPages}
+          </p>
+        )}
+      </div>
 
-      <Suspense
-        key={q}
-        fallback={
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="card animate-pulse">
-                <div className="h-40 bg-stone-200" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-stone-200 rounded w-3/4" />
-                  <div className="h-3 bg-stone-100 rounded w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        }
-      >
-        <RecipeList query={q} />
-      </Suspense>
+      {/* Recipe grid — Server Component, no Suspense needed (awaited above) */}
+      <RecipeList recipes={recipes} query={q} />
+
+      {/*
+        Pagination — each link preserves ?q to avoid losing the search query.
+        Q: Comment avez-vous conservé la query d'une page à l'autre ?
+        R: En l'encodant dans chaque URL de pagination (?q=...&page=N).
+           Le composant Pagination reçoit `query` en prop et l'injecte dans
+           chaque <Link href>. La query n'est donc jamais stockée en état
+           client — elle vit dans l'URL, source de vérité unique.
+      */}
+      <Pagination currentPage={page} totalPages={totalPages} query={q} />
     </div>
   );
 }
