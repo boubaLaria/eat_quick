@@ -1,14 +1,22 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { loginCustomer, LoginState } from "@/actions/loginCustomer";
 import Link from "next/link";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [state, action, pending] = useActionState<LoginState, FormData>(
     loginCustomer,
     null
   );
+
+  useEffect(() => {
+    if (state?.role) {
+      router.push(state.role === "STAFF" ? "/admin" : "/");
+    }
+  }, [state?.role]);
 
   return (
     <form action={action} className="space-y-5">

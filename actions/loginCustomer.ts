@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { createSession } from "@/lib/session";
 
-export type LoginState = { error?: string } | null;
+export type LoginState = { error?: string; role?: string } | null;
 
 export async function loginCustomer(
   _prevState: LoginState,
@@ -25,5 +25,5 @@ export async function loginCustomer(
   }
 
   await createSession(customer.id, customer.role);
-  redirect("/");
+  return { role: customer.role };
 }
