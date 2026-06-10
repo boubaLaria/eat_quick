@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getSession } from "@/lib/session";
+import { logout } from "@/actions/logout";
 
 const navLinks = [
   { href: "/", label: "HOME" },
@@ -7,10 +9,11 @@ const navLinks = [
   { href: "/make-your-own-salad", label: "MAKE YOUR OWN" },
   { href: "/our-recipes", label: "OUR RECIPES" },
   { href: "/contact", label: "CONTACT" },
-  { href: "/login", label: "LOG IN" },
 ];
 
-export default function Header() {
+export default async function Header() {
+  const session = await getSession();
+
   return (
     <header className="bg-green-800 text-white shadow-md">
       <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -55,6 +58,25 @@ export default function Header() {
                   </Link>
                 </li>
               ))}
+              <li>
+                {session ? (
+                  <form action={logout}>
+                    <button
+                      type="submit"
+                      className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 transition-colors"
+                    >
+                      Déconnexion
+                    </button>
+                  </form>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="px-3 py-1.5 rounded hover:bg-green-700 transition-colors"
+                  >
+                    LOG IN
+                  </Link>
+                )}
+              </li>
             </ul>
           </nav>
         </div>

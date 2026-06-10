@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useActionState } from "react";
 import { placeOrder } from "@/actions/placeOrder";
-import { loginCustomer } from "@/actions/loginCustomer";
+import { loginCustomerInline } from "@/actions/loginCustomerInline";
 
 type Ingredient = { name: string; price: number };
 
@@ -49,7 +49,7 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
   });
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
 
-  const [loginState, loginAction, loginPending] = useActionState(loginCustomer, null);
+  const [loginState, loginAction, loginPending] = useActionState(loginCustomerInline, null);
   const [orderState, orderAction, orderPending] = useActionState(placeOrder, null);
 
   useEffect(() => {

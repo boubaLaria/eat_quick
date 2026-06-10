@@ -1,16 +1,18 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { createSession } from "@/lib/session";
 
-export type LoginState = { error?: string } | null;
+export type LoginInlineState = {
+  error?: string;
+  customer?: { id: number; name: string; email: string };
+} | null;
 
-export async function loginCustomer(
-  _prevState: LoginState,
+export async function loginCustomerInline(
+  _prevState: LoginInlineState,
   formData: FormData
-): Promise<LoginState> {
+): Promise<LoginInlineState> {
   const email = (formData.get("email") as string)?.trim();
   const password = formData.get("password") as string;
 
@@ -25,5 +27,5 @@ export async function loginCustomer(
   }
 
   await createSession(customer.id, customer.role);
-  redirect("/");
+  return { customer: { id: customer.id, name: customer.name, email: customer.email } };
 }

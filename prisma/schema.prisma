@@ -22,6 +22,11 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum Role {
+  CUSTOMER
+  STAFF
+}
+
 model Ingredient {
   id       Int                @id @default(autoincrement())
   category IngredientCategory
@@ -34,6 +39,7 @@ model Customer {
   name      String
   email     String   @unique
   password  String
+  role      Role     @default(CUSTOMER)
   createdAt DateTime @default(now())
   orders    Order[]
 }
