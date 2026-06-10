@@ -50,7 +50,10 @@ export default function MenuCard({ item }: { item: MenuItem }) {
             <h3 className="text-base mb-1 group-hover:text-green-700 transition-colors">
               {item.title}
             </h3>
-            <p className="text-xs text-stone-400 mb-2">{item.calories} kcal</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-stone-400">{item.calories} kcal</p>
+              <p className="text-sm font-semibold text-green-700">€{item.price.toFixed(2)}</p>
+            </div>
             <p className="text-xs text-stone-500 line-clamp-2">
               {item.ingredients.join(", ")}
             </p>

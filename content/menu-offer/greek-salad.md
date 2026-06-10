@@ -11,6 +11,7 @@ ingredients:
   - Feta cheese
   - Greek dressing
 calories: 260
+price: 8.90
 image_cover : "./img/greek-salad.jpg"
 imageSrc : "greek-salad.jpg"
 ---

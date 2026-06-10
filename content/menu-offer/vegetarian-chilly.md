@@ -11,6 +11,7 @@ ingredients:
   - Chili Powder
   - Cornbread
 calories: 340
+price: 10.90
 imageSrc : "no-image.png"
 ---
 

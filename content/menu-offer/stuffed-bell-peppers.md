@@ -11,6 +11,7 @@ ingredients:
   - Cumin
   - Avocado
 calories: 350
+price: 11.50
 imageSrc : "stuffed-pepper.jpg"
 ---
 

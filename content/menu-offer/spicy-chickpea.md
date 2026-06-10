@@ -11,6 +11,7 @@ ingredients:
   - Garlic
   - Basmati Rice
 calories: 380
+price: 11.90
 imageSrc : "chickpea-curry.jpg"
 ---
 

@@ -10,6 +10,7 @@ ingredients:
   - Croutons
   - Balsamic Glaze
 calories: 300
+price: 10.90
 image_cover : "./img/no-image.png"
 imageSrc : "no-image.png"
 ---

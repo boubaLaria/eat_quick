@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decrypt } from "@/lib/session";
 
-const protectedRoutes = ["/payment", "/tracking-order"];
+const protectedRoutes = ["/payment"];
 const authRoutes = ["/login", "/signup"];
 
 export default async function proxy(req: NextRequest) {

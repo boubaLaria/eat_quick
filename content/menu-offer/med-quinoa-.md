@@ -11,6 +11,7 @@ ingredients:
   - Red Onion
   - Greek Dressing
 calories: 320
+price: 10.50
 image_cover : "./img/med-quinoa-salad.jpg"
 imageSrc : "med-quinoa-salad.jpg"
 ---

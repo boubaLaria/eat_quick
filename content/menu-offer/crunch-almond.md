@@ -10,6 +10,7 @@ ingredients:
   - Red Onion
   - Poppyseed Dressing
 calories: 260
+price: 9.50
 image_cover : "./img/crunched-almond.jpg"
 imageSrc : "crunched-almond.jpg"
 

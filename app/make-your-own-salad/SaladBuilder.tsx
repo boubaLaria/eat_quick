@@ -14,7 +14,9 @@ type IngredientsData = {
   extras: Ingredient[];
 };
 
-export default function SaladBuilder() {
+type InitialCustomer = { id: number; name: string; email: string } | null;
+
+export default function SaladBuilder({ initialCustomer }: { initialCustomer: InitialCustomer }) {
   const [data, setData] = useState<IngredientsData | null>(null);
   const [veggie, setVeggie] = useState<Ingredient | null>(null);
   const [protein, setProtein] = useState<Ingredient | null>(null);
@@ -104,6 +106,7 @@ export default function SaladBuilder() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         order={{ veggie: veggie!, protein: protein!, sauce: sauce!, extra }}
+        initialCustomer={initialCustomer}
       />
     </div>
   );

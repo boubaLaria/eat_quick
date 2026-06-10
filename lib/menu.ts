@@ -12,6 +12,7 @@ export type MenuItem = {
   category: string;
   ingredients: string[];
   calories: number;
+  price: number;
   imageSrc: string;
   contentHtml: string;
 };
@@ -29,6 +30,7 @@ export function getAllMenuItems(): MenuItem[] {
         category: (data.category as string) ?? "other",
         ingredients: (data.ingredients as string[]) ?? [],
         calories: (data.calories as number) ?? 0,
+        price: (data.price as number) ?? 0,
         imageSrc: (data.imageSrc as string) ?? "no-image.png",
         contentHtml: "",
       };
@@ -54,6 +56,7 @@ export async function getMenuItemBySlug(slug: string): Promise<MenuItem | null> 
         category: (data.category as string) ?? "other",
         ingredients: (data.ingredients as string[]) ?? [],
         calories: (data.calories as number) ?? 0,
+        price: (data.price as number) ?? 0,
         imageSrc: (data.imageSrc as string) ?? "no-image.png",
         contentHtml: processed.toString(),
       };

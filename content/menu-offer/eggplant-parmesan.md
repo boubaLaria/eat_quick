@@ -10,6 +10,7 @@ ingredients:
   - Fresh Basil
 category: 'hot-meal'
 calories: 420
+price: 12.90
 imageSrc : "eggplant-parmesan.jpg"
 ---
 

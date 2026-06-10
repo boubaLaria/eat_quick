@@ -11,6 +11,7 @@ ingredients:
   - Olive Oil
   - Balsamic Glaze
 calories: 300
+price: 12.50
 imageSrc : "spinash-mushroom.jpg"
 ---
 

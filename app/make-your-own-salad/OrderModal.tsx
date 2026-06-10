@@ -31,19 +31,22 @@ const PAYMENT_METHODS = [
   { id: "google", label: "Google Pay", sublabel: "Authentification Google", icon: "🔵" },
 ];
 
+type InitialCustomer = { id: number; name: string; email: string } | null;
+
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   order: Order;
+  initialCustomer: InitialCustomer;
 };
 
-export default function OrderModal({ isOpen, onClose, order }: Props) {
-  const [step, setStep] = useState<Step>("auth");
+export default function OrderModal({ isOpen, onClose, order, initialCustomer }: Props) {
+  const [step, setStep] = useState<Step>(initialCustomer ? "info" : "auth");
   const [showLogin, setShowLogin] = useState(false);
-  const [customerId, setCustomerId] = useState<number | null>(null);
+  const [customerId, setCustomerId] = useState<number | null>(initialCustomer?.id ?? null);
   const [userInfo, setUserInfo] = useState<UserInfo>({
-    name: "",
-    email: "",
+    name: initialCustomer?.name ?? "",
+    email: initialCustomer?.email ?? "",
     phone: "",
     pickupTime: "",
   });
@@ -54,13 +57,18 @@ export default function OrderModal({ isOpen, onClose, order }: Props) {
 
   useEffect(() => {
     if (isOpen) {
-      setStep("auth");
+      setStep(initialCustomer ? "info" : "auth");
       setShowLogin(false);
-      setCustomerId(null);
+      setCustomerId(initialCustomer?.id ?? null);
       setPaymentMethod(null);
-      setUserInfo({ name: "", email: "", phone: "", pickupTime: "" });
+      setUserInfo({
+        name: initialCustomer?.name ?? "",
+        email: initialCustomer?.email ?? "",
+        phone: "",
+        pickupTime: "",
+      });
     }
-  }, [isOpen]);
+  }, [isOpen, initialCustomer]);
 
   useEffect(() => {
     if (loginState?.customer) {

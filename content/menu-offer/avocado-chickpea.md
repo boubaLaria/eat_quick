@@ -10,6 +10,7 @@ ingredients:
   - Cilantro
   - Lime Vinaigrette
 calories: 340
+price: 9.90
 imageSrc : "avocado-chickpea.jpg"
 ---
 

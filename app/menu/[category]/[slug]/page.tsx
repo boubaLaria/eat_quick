@@ -2,6 +2,9 @@ import { getMenuItemBySlug, getAllMenuItems } from "@/lib/menu";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getSession } from "@/lib/session";
+import prisma from "@/lib/prisma";
+import OrderButton from "./OrderButton";
 
 type Props = { params: Promise<{ category: string; slug: string }> };
 
@@ -22,6 +25,14 @@ export default async function MenuItemPage({ params }: Props) {
   const item = await getMenuItemBySlug(slug);
 
   if (!item) notFound();
+
+  const session = await getSession();
+  const initialCustomer = session?.userId
+    ? await prisma.customer.findUnique({
+        where: { id: session.userId },
+        select: { id: true, name: true, email: true },
+      })
+    : null;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -47,7 +58,10 @@ export default async function MenuItemPage({ params }: Props) {
             {item.category === "hot-meal" ? "Hot Meal" : "Salad"}
           </span>
           <h1 className="mb-2">{item.title}</h1>
-          <p className="text-stone-400 text-sm mb-6">{item.calories} kcal</p>
+          <div className="flex items-center gap-4 mb-6">
+            <p className="text-stone-400 text-sm">{item.calories} kcal</p>
+            <p className="text-2xl font-bold text-green-700">€{item.price.toFixed(2)}</p>
+          </div>
 
           <div className="mb-6">
             <h3 className="text-base mb-3">Ingredients</h3>
@@ -68,8 +82,12 @@ export default async function MenuItemPage({ params }: Props) {
             dangerouslySetInnerHTML={{ __html: item.contentHtml }}
           />
 
-          <div className="mt-8 flex gap-4">
-            <Link href="/make-your-own-salad" className="btn-primary">
+          <div className="mt-8 flex gap-4 flex-wrap">
+            <OrderButton
+              item={{ name: item.title, price: item.price }}
+              initialCustomer={initialCustomer}
+            />
+            <Link href="/make-your-own-salad" className="btn-outline">
               Make Your Own
             </Link>
             <Link href="/menus" className="btn-outline">
