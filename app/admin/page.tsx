@@ -1,3 +1,4 @@
+import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { updateOrderStatus } from "@/actions/updateOrderStatus";
 
@@ -7,6 +8,7 @@ const STATUS_LABELS: Record<string, string> = {
   PENDING: "En préparation",
   READY: "Prête à récupérer",
   COMPLETED: "Récupérée",
+  DISTRIBUTED: "Distribuée",
   CANCELLED: "Annulée",
 };
 
@@ -14,6 +16,7 @@ const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-orange-100 text-orange-700",
   READY: "bg-green-100 text-green-700",
   COMPLETED: "bg-stone-100 text-stone-500",
+  DISTRIBUTED: "bg-blue-100 text-blue-700",
   CANCELLED: "bg-red-100 text-red-700",
 };
 
@@ -76,7 +79,12 @@ export default async function AdminDashboardPage() {
               {orders.map((order) => (
                 <tr key={order.id} className="hover:bg-stone-50 transition-colors">
                   <td className="px-4 py-3 font-mono text-xs text-stone-500">
-                    {order.orderNumber}
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="hover:text-green-700 hover:underline transition-colors"
+                    >
+                      {order.orderNumber}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-stone-600">
                     {order.orderTime.toLocaleDateString("fr-FR", {
@@ -126,6 +134,7 @@ export default async function AdminDashboardPage() {
                         <option value="PENDING">En préparation</option>
                         <option value="READY">Prête à récupérer</option>
                         <option value="COMPLETED">Récupérée</option>
+                        <option value="DISTRIBUTED">Distribuée</option>
                         <option value="CANCELLED">Annulée</option>
                       </select>
                       <button

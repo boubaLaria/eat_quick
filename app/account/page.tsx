@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useSession, signOut } from "@/lib/auth-client";
-import { Phone, User, Mail, ShieldCheck, CheckCircle, Loader2, AlertCircle } from "lucide-react";
+import { Phone, User, Mail, ShieldCheck, CheckCircle, Loader2, AlertCircle, Star, ShoppingBag } from "lucide-react";
 import { updatePhone } from "@/actions/updatePhone";
 
 export default function AccountPage() {
@@ -133,6 +134,30 @@ export default function AccountPage() {
             )}
           </button>
         </form>
+
+        <div className="h-px bg-stone-100" />
+
+        {/* Navigation links */}
+        <div className="space-y-2">
+          <Link
+            href="/account/orders"
+            className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-stone-50 border border-stone-100 transition-all group"
+          >
+            <ShoppingBag className="w-4 h-4 text-stone-400 group-hover:text-green-600 transition-colors" />
+            <span className="text-sm font-semibold text-stone-700 group-hover:text-green-700 transition-colors">
+              Mes commandes
+            </span>
+          </Link>
+          <Link
+            href="/account/loyalty"
+            className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-amber-50 border border-amber-100 transition-all group"
+          >
+            <Star className="w-4 h-4 text-amber-400 group-hover:text-amber-500 transition-colors" />
+            <span className="text-sm font-semibold text-stone-700 group-hover:text-amber-700 transition-colors">
+              Programme de fidélité
+            </span>
+          </Link>
+        </div>
 
         <div className="h-px bg-stone-100" />
 

@@ -8,9 +8,10 @@ type InitialCustomer = { id: string; name: string; email: string; phoneNumber?: 
 type Props = {
   item: { name: string; price: number };
   initialCustomer: InitialCustomer;
+  pendingDiscount?: number;
 };
 
-export default function OrderButton({ item, initialCustomer }: Props) {
+export default function OrderButton({ item, initialCustomer, pendingDiscount = 0 }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -23,6 +24,7 @@ export default function OrderButton({ item, initialCustomer }: Props) {
         onClose={() => setModalOpen(false)}
         item={item}
         initialCustomer={initialCustomer}
+        pendingDiscount={pendingDiscount}
       />
     </>
   );

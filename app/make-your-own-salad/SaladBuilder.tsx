@@ -16,7 +16,7 @@ type IngredientsData = {
 
 type InitialCustomer = { id: string; name: string; email: string; phoneNumber?: string | null } | null;
 
-export default function SaladBuilder({ initialCustomer }: { initialCustomer: InitialCustomer }) {
+export default function SaladBuilder({ initialCustomer, pendingDiscount = 0 }: { initialCustomer: InitialCustomer; pendingDiscount?: number }) {
   const [data, setData] = useState<IngredientsData | null>(null);
   const [veggie, setVeggie] = useState<Ingredient | null>(null);
   const [protein, setProtein] = useState<Ingredient | null>(null);
@@ -107,6 +107,7 @@ export default function SaladBuilder({ initialCustomer }: { initialCustomer: Ini
         onClose={() => setModalOpen(false)}
         order={{ veggie: veggie!, protein: protein!, sauce: sauce!, extra }}
         initialCustomer={initialCustomer}
+        pendingDiscount={pendingDiscount}
       />
     </div>
   );

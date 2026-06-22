@@ -38,9 +38,10 @@ type Props = {
   onClose: () => void;
   order: Order;
   initialCustomer: InitialCustomer;
+  pendingDiscount?: number;
 };
 
-export default function OrderModal({ isOpen, onClose, order, initialCustomer }: Props) {
+export default function OrderModal({ isOpen, onClose, order, initialCustomer, pendingDiscount = 0 }: Props) {
   const [step, setStep] = useState<Step>(initialCustomer ? "info" : "auth");
   const [showLogin, setShowLogin] = useState(false);
   const [userId, setUserId] = useState<string | null>(initialCustomer?.id ?? null);
@@ -104,7 +105,9 @@ export default function OrderModal({ isOpen, onClose, order, initialCustomer }: 
   const allItems = [...baseItems, ...(order.extra ? [order.extra] : [])];
   const baseTotal = baseItems.reduce((s, i) => s + i.price, 0);
   const extraTotal = order.extra?.price ?? 0;
-  const total = baseTotal + extraTotal;
+  const rawTotal = baseTotal + extraTotal;
+  const discount = userId !== null ? pendingDiscount : 0;
+  const total = Math.max(0, rawTotal - discount);
 
   const now = new Date();
   const minTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
@@ -364,6 +367,13 @@ export default function OrderModal({ isOpen, onClose, order, initialCustomer }: 
                 <p className="text-sm text-stone-400 italic">Aucun extra sélectionné</p>
               )}
 
+              {discount > 0 && (
+                <div className="flex justify-between text-sm text-green-700 font-semibold bg-green-50 rounded-xl px-3 py-2">
+                  <span>Réduction fidélité</span>
+                  <span>−€{discount.toFixed(2)}</span>
+                </div>
+              )}
+
               <div className="flex justify-between font-bold text-lg border-t-2 border-stone-200 pt-4">
                 <span>Total à payer</span>
                 <span className="text-green-700">€{total.toFixed(2)}</span>
@@ -430,6 +440,12 @@ export default function OrderModal({ isOpen, onClose, order, initialCustomer }: 
               </div>
 
               <div className="border-t border-stone-100 pt-4">
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm text-green-700 font-semibold bg-green-50 rounded-xl px-3 py-2 mb-3">
+                    <span>Réduction fidélité</span>
+                    <span>−€{discount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-lg mb-4">
                   <span>Total à payer</span>
                   <span className="text-green-700">€{total.toFixed(2)}</span>

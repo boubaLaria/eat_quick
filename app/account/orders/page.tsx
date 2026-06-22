@@ -13,6 +13,7 @@ const STATUS_LABELS: Record<string, string> = {
   PENDING: "En préparation",
   READY: "Prête à récupérer",
   COMPLETED: "Récupérée",
+  DISTRIBUTED: "Distribuée",
   CANCELLED: "Annulée",
 };
 
@@ -20,6 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-orange-100 text-orange-600",
   READY: "bg-green-100 text-green-700",
   COMPLETED: "bg-stone-100 text-stone-500",
+  DISTRIBUTED: "bg-blue-100 text-blue-700",
   CANCELLED: "bg-red-100 text-red-600",
 };
 
@@ -40,6 +42,19 @@ export default async function OrdersPage() {
   const orders = await prisma.order.findMany({
     where: { userId: session.user.id },
     orderBy: { orderTime: "desc" },
+    select: {
+      id: true,
+      orderNumber: true,
+      orderTime: true,
+      pickupTime: true,
+      customerName: true,
+      customerEmail: true,
+      customerPhone: true,
+      items: true,
+      status: true,
+      discount: true,
+      userId: true,
+    },
   });
 
   const enriched = orders.map((o) => {
@@ -47,7 +62,7 @@ export default async function OrdersPage() {
     let total = 0;
     try {
       items = JSON.parse(o.items);
-      total = items.reduce((sum, i) => sum + i.price, 0);
+      total = Math.max(0, items.reduce((sum, i) => sum + i.price, 0) - (o.discount ?? 0));
     } catch {}
     return { ...o, parsedItems: items, total };
   });

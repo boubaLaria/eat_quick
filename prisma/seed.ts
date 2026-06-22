@@ -25,7 +25,7 @@ async function createUser(name: string, email: string, password: string, role: s
 async function main() {
   await createUser("Manager", "manager@eat-quick.io", "manager123", "staff");
   await createUser("Alice", "alice@eat-quick.io", "alice123", "customer");
-  await createUser("Bob", "bob@eat-quick.io", "bob123", "customer");
+  await createUser("Bob", "bob@eat-quick.io", "bob12345", "customer");
   await createUser("Carol", "carol@eat-quick.io", "carol123", "customer");
 
   const ingredients: Prisma.IngredientCreateInput[] = [

@@ -72,6 +72,7 @@ export default async function OrderTrackingPage({ params }: Props) {
       customerEmail: true,
       items: true,
       status: true,
+      discount: true,
     },
   });
 
@@ -120,7 +121,9 @@ export default async function OrderTrackingPage({ params }: Props) {
     // JSON malformé — liste vide
   }
 
-  const total = items.reduce((sum, item) => sum + item.price, 0);
+  const rawTotal = items.reduce((sum, item) => sum + item.price, 0);
+  const discount = order.discount ?? 0;
+  const total = Math.max(0, rawTotal - discount);
 
   const pickupFormatted = order.pickupTime.toLocaleTimeString("fr-FR", {
     hour: "2-digit",
@@ -144,6 +147,7 @@ export default async function OrderTrackingPage({ params }: Props) {
           maskedEmail: maskEmail(order.customerEmail),
           items,
           total,
+          discount,
           status: order.status,
         }}
       />

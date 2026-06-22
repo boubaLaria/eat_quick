@@ -28,9 +28,10 @@ type Props = {
   onClose: () => void;
   item: { name: string; price: number };
   initialCustomer: InitialCustomer;
+  pendingDiscount?: number;
 };
 
-export default function MenuItemOrderModal({ isOpen, onClose, item, initialCustomer }: Props) {
+export default function MenuItemOrderModal({ isOpen, onClose, item, initialCustomer, pendingDiscount = 0 }: Props) {
   const [step, setStep] = useState<Step>(initialCustomer ? "info" : "auth");
   const [showLogin, setShowLogin] = useState(false);
   const [userId, setUserId] = useState<string | null>(initialCustomer?.id ?? null);
@@ -93,6 +94,8 @@ export default function MenuItemOrderModal({ isOpen, onClose, item, initialCusto
   const now = new Date();
   const minTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   const stepIndex = STEPS.indexOf(step);
+  const discount = userId !== null ? pendingDiscount : 0;
+  const finalPrice = Math.max(0, item.price - discount);
 
   return (
     <div
@@ -225,9 +228,16 @@ export default function MenuItemOrderModal({ isOpen, onClose, item, initialCusto
                 </div>
               </div>
 
+              {discount > 0 && (
+                <div className="flex justify-between text-sm text-green-700 font-semibold bg-green-50 rounded-xl px-3 py-2">
+                  <span>Réduction fidélité</span>
+                  <span>−€{discount.toFixed(2)}</span>
+                </div>
+              )}
+
               <div className="flex justify-between font-bold text-lg border-t-2 border-stone-200 pt-4">
                 <span>Total à payer</span>
-                <span className="text-green-700">€{item.price.toFixed(2)}</span>
+                <span className="text-green-700">€{finalPrice.toFixed(2)}</span>
               </div>
 
               <div className="flex gap-3 pt-1">
@@ -273,9 +283,15 @@ export default function MenuItemOrderModal({ isOpen, onClose, item, initialCusto
               </div>
 
               <div className="border-t border-stone-100 pt-4">
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm text-green-700 font-semibold bg-green-50 rounded-xl px-3 py-2 mb-3">
+                    <span>Réduction fidélité</span>
+                    <span>−€{discount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-lg mb-4">
                   <span>Total à payer</span>
-                  <span className="text-green-700">€{item.price.toFixed(2)}</span>
+                  <span className="text-green-700">€{finalPrice.toFixed(2)}</span>
                 </div>
                 {orderState?.errors?.general && <p className="text-sm text-red-500 mb-3">{orderState.errors.general}</p>}
                 <div className="flex gap-3">

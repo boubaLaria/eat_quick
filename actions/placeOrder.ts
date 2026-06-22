@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
 export type OrderState = {
   errors?: {
@@ -44,6 +46,21 @@ export async function placeOrder(
   const pickup = new Date();
   pickup.setHours(hours, minutes, 0, 0);
 
+  // Apply pending discount for authenticated users
+  let discount = 0;
+  if (userId) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (session?.user?.id === userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { pendingDiscount: true },
+      });
+      if (user && user.pendingDiscount > 0) {
+        discount = user.pendingDiscount;
+      }
+    }
+  }
+
   try {
     await prisma.order.create({
       data: {
@@ -54,9 +71,17 @@ export async function placeOrder(
         customerPhone: phone,
         items: itemsRaw,
         status: "PENDING",
+        discount,
         userId,
       },
     });
+
+    if (discount > 0 && userId) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { pendingDiscount: 0 },
+      });
+    }
   } catch {
     return { errors: { general: "Erreur lors de l'enregistrement de la commande" } };
   }

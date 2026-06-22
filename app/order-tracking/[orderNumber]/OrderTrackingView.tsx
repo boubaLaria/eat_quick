@@ -13,6 +13,7 @@ type Order = {
   maskedEmail: string;
   items: OrderItem[];
   total: number;
+  discount: number;
   status: string;
 };
 
@@ -20,6 +21,7 @@ const STATUS_LABELS: Record<string, string> = {
   PENDING: "En préparation",
   READY: "Prête à récupérer",
   COMPLETED: "Récupérée",
+  DISTRIBUTED: "Distribuée",
   CANCELLED: "Annulée",
 };
 
@@ -27,6 +29,7 @@ const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-orange-100 text-orange-700",
   READY: "bg-green-100 text-green-700",
   COMPLETED: "bg-stone-100 text-stone-500",
+  DISTRIBUTED: "bg-blue-100 text-blue-700",
   CANCELLED: "bg-red-100 text-red-700",
 };
 
@@ -108,6 +111,12 @@ export default function OrderTrackingView({ order }: { order: Order }) {
               </li>
             ))}
           </ul>
+          {order.discount > 0 && (
+            <div className="flex justify-between text-sm text-green-700 font-semibold mt-2">
+              <span>Réduction fidélité</span>
+              <span>−€{order.discount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between font-bold text-base border-t border-stone-100 mt-3 pt-3">
             <span>Total</span>
             <span className="text-green-700">€{order.total.toFixed(2)}</span>

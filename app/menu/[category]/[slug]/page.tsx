@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 import OrderButton from "./OrderButton";
 
 type Props = { params: Promise<{ category: string; slug: string }> };
@@ -35,6 +36,15 @@ export default async function MenuItemPage({ params }: Props) {
         phoneNumber: session.user.phoneNumber ?? null,
       }
     : null;
+
+  let pendingDiscount = 0;
+  if (session?.user) {
+    const u = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { pendingDiscount: true },
+    });
+    pendingDiscount = u?.pendingDiscount ?? 0;
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -88,6 +98,7 @@ export default async function MenuItemPage({ params }: Props) {
             <OrderButton
               item={{ name: item.title, price: item.price }}
               initialCustomer={initialUser}
+              pendingDiscount={pendingDiscount}
             />
             <Link href="/make-your-own-salad" className="btn-outline">
               Make Your Own
