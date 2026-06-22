@@ -2,8 +2,8 @@ import { getMenuItemBySlug, getAllMenuItems } from "@/lib/menu";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSession } from "@/lib/session";
-import prisma from "@/lib/prisma";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import OrderButton from "./OrderButton";
 
 type Props = { params: Promise<{ category: string; slug: string }> };
@@ -26,12 +26,9 @@ export default async function MenuItemPage({ params }: Props) {
 
   if (!item) notFound();
 
-  const session = await getSession();
-  const initialCustomer = session?.userId
-    ? await prisma.customer.findUnique({
-        where: { id: session.userId },
-        select: { id: true, name: true, email: true },
-      })
+  const session = await auth.api.getSession({ headers: await headers() });
+  const initialUser = session?.user
+    ? { id: session.user.id, name: session.user.name, email: session.user.email }
     : null;
 
   return (
@@ -85,7 +82,7 @@ export default async function MenuItemPage({ params }: Props) {
           <div className="mt-8 flex gap-4 flex-wrap">
             <OrderButton
               item={{ name: item.title, price: item.price }}
-              initialCustomer={initialCustomer}
+              initialCustomer={initialUser}
             />
             <Link href="/make-your-own-salad" className="btn-outline">
               Make Your Own

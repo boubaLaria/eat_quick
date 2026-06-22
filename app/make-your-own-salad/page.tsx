@@ -1,19 +1,16 @@
 import SaladBuilder from "./SaladBuilder";
-import { getSession } from "@/lib/session";
-import prisma from "@/lib/prisma";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
 export const metadata = {
   title: "Make Your Own Salad — EatQuick",
 };
 
 export default async function MakeYourOwnPage() {
-  const session = await getSession();
+  const session = await auth.api.getSession({ headers: await headers() });
 
-  const initialCustomer = session?.userId
-    ? await prisma.customer.findUnique({
-        where: { id: session.userId },
-        select: { id: true, name: true, email: true },
-      })
+  const initialUser = session?.user
+    ? { id: session.user.id, name: session.user.name, email: session.user.email }
     : null;
 
   return (
@@ -22,7 +19,7 @@ export default async function MakeYourOwnPage() {
       <p className="text-stone-500 mb-10">
         Composez votre bowl sur mesure. Choisissez une veggie, une protéine, une sauce (obligatoires) et un extra (optionnel).
       </p>
-      <SaladBuilder initialCustomer={initialCustomer} />
+      <SaladBuilder initialCustomer={initialUser} />
     </div>
   );
 }

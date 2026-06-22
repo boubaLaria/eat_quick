@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useActionState } from "react";
 import { placeOrder } from "@/actions/placeOrder";
-import { loginCustomerInline } from "@/actions/loginCustomerInline";
+import { signIn } from "@/lib/auth-client";
 
 type Ingredient = { name: string; price: number };
 
@@ -31,7 +31,7 @@ const PAYMENT_METHODS = [
   { id: "google", label: "Google Pay", sublabel: "Authentification Google", icon: "🔵" },
 ];
 
-type InitialCustomer = { id: number; name: string; email: string } | null;
+type InitialCustomer = { id: string; name: string; email: string } | null;
 
 type Props = {
   isOpen: boolean;
@@ -43,7 +43,7 @@ type Props = {
 export default function OrderModal({ isOpen, onClose, order, initialCustomer }: Props) {
   const [step, setStep] = useState<Step>(initialCustomer ? "info" : "auth");
   const [showLogin, setShowLogin] = useState(false);
-  const [customerId, setCustomerId] = useState<number | null>(initialCustomer?.id ?? null);
+  const [userId, setUserId] = useState<string | null>(initialCustomer?.id ?? null);
   const [userInfo, setUserInfo] = useState<UserInfo>({
     name: initialCustomer?.name ?? "",
     email: initialCustomer?.email ?? "",
@@ -51,16 +51,18 @@ export default function OrderModal({ isOpen, onClose, order, initialCustomer }: 
     pickupTime: "",
   });
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginPending, setLoginPending] = useState(false);
 
-  const [loginState, loginAction, loginPending] = useActionState(loginCustomerInline, null);
   const [orderState, orderAction, orderPending] = useActionState(placeOrder, null);
 
   useEffect(() => {
     if (isOpen) {
       setStep(initialCustomer ? "info" : "auth");
       setShowLogin(false);
-      setCustomerId(initialCustomer?.id ?? null);
+      setUserId(initialCustomer?.id ?? null);
       setPaymentMethod(null);
+      setLoginError(null);
       setUserInfo({
         name: initialCustomer?.name ?? "",
         email: initialCustomer?.email ?? "",
@@ -70,18 +72,29 @@ export default function OrderModal({ isOpen, onClose, order, initialCustomer }: 
     }
   }, [isOpen, initialCustomer]);
 
-  useEffect(() => {
-    if (loginState?.customer) {
-      setCustomerId(loginState.customer.id);
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoginError(null);
+    setLoginPending(true);
+    const formData = new FormData(e.currentTarget);
+    const res = await signIn.email({
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    });
+    setLoginPending(false);
+    if (res.error) {
+      setLoginError(res.error.message || "Email ou mot de passe incorrect");
+    } else if (res.data?.user) {
+      setUserId(res.data.user.id);
       setUserInfo((prev) => ({
         ...prev,
-        name: loginState.customer!.name,
-        email: loginState.customer!.email,
+        name: res.data!.user.name,
+        email: res.data!.user.email,
       }));
       setStep("info");
       setShowLogin(false);
     }
-  }, [loginState]);
+  }
 
   if (!isOpen) return null;
 
@@ -143,7 +156,7 @@ export default function OrderModal({ isOpen, onClose, order, initialCustomer }: 
               {!showLogin ? (
                 <>
                   <button
-                    onClick={() => { setCustomerId(null); setStep("info"); }}
+                    onClick={() => { setUserId(null); setStep("info"); }}
                     className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-stone-200 hover:border-green-500 transition-colors text-left group"
                   >
                     <span className="text-2xl">👤</span>
@@ -170,7 +183,7 @@ export default function OrderModal({ isOpen, onClose, order, initialCustomer }: 
                   </button>
                 </>
               ) : (
-                <form action={loginAction} className="space-y-4">
+                <form onSubmit={handleLogin} className="space-y-4">
                   <button
                     type="button"
                     onClick={() => setShowLogin(false)}
@@ -202,8 +215,8 @@ export default function OrderModal({ isOpen, onClose, order, initialCustomer }: 
                       className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
                   </div>
-                  {loginState?.error && (
-                    <p className="text-sm text-red-500">{loginState.error}</p>
+                  {loginError && (
+                    <p className="text-sm text-red-500">{loginError}</p>
                   )}
                   <button
                     type="submit"
@@ -368,14 +381,13 @@ export default function OrderModal({ isOpen, onClose, order, initialCustomer }: 
           {/* ── STEP 4 : payment ── */}
           {step === "payment" && (
             <form action={orderAction} className="space-y-4">
-              {/* Hidden inputs — collected data from previous steps */}
               <input type="hidden" name="name" value={userInfo.name} />
               <input type="hidden" name="email" value={userInfo.email} />
               <input type="hidden" name="phone" value={userInfo.phone} />
               <input type="hidden" name="pickupTime" value={userInfo.pickupTime} />
               <input type="hidden" name="items" value={JSON.stringify(allItems)} />
-              {customerId !== null && (
-                <input type="hidden" name="customerId" value={customerId} />
+              {userId !== null && (
+                <input type="hidden" name="userId" value={userId} />
               )}
               <input type="hidden" name="paymentMethod" value={paymentMethod ?? ""} />
 

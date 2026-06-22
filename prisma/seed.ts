@@ -1,38 +1,33 @@
 import { PrismaClient, Prisma } from "../app/generated/prisma";
-import bcrypt from "bcryptjs";
+import { auth } from "../lib/auth";
 import "dotenv/config";
 
 const prisma = new PrismaClient();
 
-async function main() {
-  // Staff
-  await prisma.customer.upsert({
-    where: { email: "manager@eat-quick.io" },
-    update: {},
-    create: {
-      name: "Manager",
-      email: "manager@eat-quick.io",
-      password: await bcrypt.hash("manager123", 10),
-      role: "STAFF",
-    },
+async function createUser(name: string, email: string, password: string, role: string) {
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) return existing;
+
+  const res = await auth.api.signUpEmail({
+    body: { name, email, password },
   });
 
-  // Customers
-  const customers: { name: string; email: string; password: string }[] = [
-    { name: "Alice", email: "alice@eat-quick.io", password: "alice123" },
-    { name: "Bob", email: "bob@eat-quick.io", password: "bob123" },
-    { name: "Carol", email: "carol@eat-quick.io", password: "carol123" },
-  ];
-
-  for (const c of customers) {
-    await prisma.customer.upsert({
-      where: { email: c.email },
-      update: {},
-      create: { name: c.name, email: c.email, password: await bcrypt.hash(c.password, 10) },
+  if (res.user && role !== "customer") {
+    await prisma.user.update({
+      where: { id: res.user.id },
+      data: { role },
     });
   }
 
-  // Ingredients
+  return res.user;
+}
+
+async function main() {
+  await createUser("Manager", "manager@eat-quick.io", "manager123", "staff");
+  await createUser("Alice", "alice@eat-quick.io", "alice123", "customer");
+  await createUser("Bob", "bob@eat-quick.io", "bob123", "customer");
+  await createUser("Carol", "carol@eat-quick.io", "carol123", "customer");
+
   const ingredients: Prisma.IngredientCreateInput[] = [
     { category: "VEGGIE", label: "salad", price: 5 },
     { category: "VEGGIE", label: "pasta", price: 6 },
@@ -79,7 +74,6 @@ async function main() {
         { name: "feta cheese", price: 2 },
       ]),
       status: "COMPLETED" as const,
-      customerId: null as number | null,
     },
     {
       orderNumber: "EQ-20260610-1002",
@@ -93,7 +87,6 @@ async function main() {
         { name: "tandoori", price: 2 },
       ]),
       status: "READY" as const,
-      customerId: null,
     },
     {
       orderNumber: "EQ-20260610-1003",
@@ -108,7 +101,6 @@ async function main() {
         { name: "nuts", price: 1 },
       ]),
       status: "PENDING" as const,
-      customerId: null,
     },
   ];
 

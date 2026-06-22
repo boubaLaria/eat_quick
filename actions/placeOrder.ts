@@ -22,7 +22,7 @@ export async function placeOrder(
   const phone = (formData.get("phone") as string)?.trim() ?? "";
   const pickupTime = formData.get("pickupTime") as string;
   const itemsRaw = formData.get("items") as string;
-  const customerIdRaw = formData.get("customerId") as string | null;
+  const userId = (formData.get("userId") as string | null) || null;
 
   const errors: NonNullable<OrderState>["errors"] = {};
 
@@ -54,12 +54,12 @@ export async function placeOrder(
         customerPhone: phone,
         items: itemsRaw,
         status: "PENDING",
-        customerId: customerIdRaw ? parseInt(customerIdRaw) : null,
+        userId,
       },
     });
   } catch {
     return { errors: { general: "Erreur lors de l'enregistrement de la commande" } };
   }
 
-  redirect(`/tracking-order/${orderNumber}`);
+  redirect(`/order-tracking/${orderNumber}`);
 }

@@ -32,7 +32,7 @@ export default async function AdminDashboardPage() {
     }),
     prisma.order.findMany({
       orderBy: { orderTime: "desc" },
-      include: { customer: { select: { id: true, name: true } } },
+      include: { user: { select: { id: true, name: true } } },
     }),
   ]);
 
@@ -40,7 +40,6 @@ export default async function AdminDashboardPage() {
     <main className="max-w-7xl mx-auto py-10 px-4">
       <h1 className="text-2xl font-bold mb-8">Dashboard staff</h1>
 
-      {/* Stats du jour */}
       <section className="grid grid-cols-2 gap-4 mb-10 max-w-md">
         <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 text-center">
           <p className="text-4xl font-bold text-orange-700">{pendingToday}</p>
@@ -56,7 +55,6 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      {/* Tableau des commandes */}
       <section>
         <h2 className="text-lg font-semibold mb-4">
           Toutes les commandes ({orders.length})
@@ -95,7 +93,7 @@ export default async function AdminDashboardPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span className="font-medium">{order.customerName}</span>
-                    {order.customer && (
+                    {order.user && (
                       <span className="ml-1.5 text-xs text-green-600 font-medium bg-green-50 px-1.5 py-0.5 rounded-full">
                         compte
                       </span>
