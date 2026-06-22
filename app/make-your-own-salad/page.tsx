@@ -10,7 +10,12 @@ export default async function MakeYourOwnPage() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   const initialUser = session?.user
-    ? { id: session.user.id, name: session.user.name, email: session.user.email }
+    ? {
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        phoneNumber: session.user.phoneNumber ?? null,
+      }
     : null;
 
   return (

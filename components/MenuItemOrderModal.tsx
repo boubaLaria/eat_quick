@@ -21,7 +21,7 @@ const PAYMENT_METHODS = [
   { id: "google", label: "Google Pay", sublabel: "Authentification Google", icon: "🔵" },
 ];
 
-type InitialCustomer = { id: string; name: string; email: string } | null;
+type InitialCustomer = { id: string; name: string; email: string; phoneNumber?: string | null } | null;
 
 type Props = {
   isOpen: boolean;
@@ -37,7 +37,7 @@ export default function MenuItemOrderModal({ isOpen, onClose, item, initialCusto
   const [userInfo, setUserInfo] = useState<UserInfo>({
     name: initialCustomer?.name ?? "",
     email: initialCustomer?.email ?? "",
-    phone: "",
+    phone: initialCustomer?.phoneNumber ?? "",
     pickupTime: "",
   });
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export default function MenuItemOrderModal({ isOpen, onClose, item, initialCusto
       setUserInfo({
         name: initialCustomer?.name ?? "",
         email: initialCustomer?.email ?? "",
-        phone: "",
+        phone: initialCustomer?.phoneNumber ?? "",
         pickupTime: "",
       });
     }
@@ -75,11 +75,13 @@ export default function MenuItemOrderModal({ isOpen, onClose, item, initialCusto
     if (res.error) {
       setLoginError(res.error.message || "Email ou mot de passe incorrect");
     } else if (res.data?.user) {
-      setUserId(res.data.user.id);
+      const u = res.data.user as typeof res.data.user & { phoneNumber?: string | null };
+      setUserId(u.id);
       setUserInfo((prev) => ({
         ...prev,
-        name: res.data!.user.name,
-        email: res.data!.user.email,
+        name: u.name,
+        email: u.email,
+        phone: u.phoneNumber ?? prev.phone,
       }));
       setStep("info");
       setShowLogin(false);

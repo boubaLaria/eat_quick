@@ -3,7 +3,7 @@
 import { useState } from "react";
 import MenuItemOrderModal from "@/components/MenuItemOrderModal";
 
-type InitialCustomer = { id: string; name: string; email: string } | null;
+type InitialCustomer = { id: string; name: string; email: string; phoneNumber?: string | null } | null;
 
 type Props = {
   item: { name: string; price: number };

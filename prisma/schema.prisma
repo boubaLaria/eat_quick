@@ -28,7 +28,11 @@ model User {
   email         String    @unique
   emailVerified Boolean
   image         String?
+  phoneNumber   String?
   role          String    @default("customer")
+  banned        Boolean?
+  banReason     String?
+  banExpires    DateTime?
   createdAt     DateTime
   updatedAt     DateTime
   sessions      Session[]

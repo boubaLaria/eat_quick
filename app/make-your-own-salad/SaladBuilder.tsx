@@ -14,7 +14,7 @@ type IngredientsData = {
   extras: Ingredient[];
 };
 
-type InitialCustomer = { id: string; name: string; email: string } | null;
+type InitialCustomer = { id: string; name: string; email: string; phoneNumber?: string | null } | null;
 
 export default function SaladBuilder({ initialCustomer }: { initialCustomer: InitialCustomer }) {
   const [data, setData] = useState<IngredientsData | null>(null);
