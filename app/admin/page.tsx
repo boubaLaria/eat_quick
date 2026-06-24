@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import prisma from "@/lib/prisma";
 import { updateOrderStatus } from "@/actions/updateOrderStatus";
 
@@ -21,6 +22,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default async function AdminDashboardPage() {
+  await connection();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
@@ -41,7 +43,15 @@ export default async function AdminDashboardPage() {
 
   return (
     <main className="max-w-7xl mx-auto py-10 px-4">
-      <h1 className="text-2xl font-bold mb-8">Dashboard staff</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold">Dashboard staff</h1>
+        <Link
+          href="/admin/news"
+          className="btn-outline text-sm py-2 px-4"
+        >
+          Gérer les actualités
+        </Link>
+      </div>
 
       <section className="grid grid-cols-2 gap-4 mb-10 max-w-md">
         <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 text-center">

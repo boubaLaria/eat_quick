@@ -113,6 +113,51 @@ async function main() {
   }
 }
 
+async function seedNews() {
+  const articles = [
+    {
+      slug: "nouveaux-horaires-ouverture",
+      title: "Changement de nos horaires d'ouverture",
+      content:
+        "À partir du 1er juillet, EatQuick adapte ses horaires pour mieux vous servir. Nous serons désormais ouverts du lundi au vendredi de 11h00 à 21h00, et le week-end de 11h00 à 22h00. Ces nouveaux créneaux nous permettent d'accueillir davantage de clients et de préparer vos commandes dans les meilleures conditions. Merci pour votre fidélité !",
+      featured_image: "https://picsum.photos/seed/horaires/800/400",
+    },
+    {
+      slug: "nouveau-wrap-poulet-grille",
+      title: "Arrivée du Wrap Poulet Grillé sur notre carte",
+      content:
+        "Nous sommes ravis d'annoncer l'arrivée d'un nouveau produit sur notre carte : le Wrap Poulet Grillé. Préparé avec du poulet mariné maison, des légumes frais de saison et notre nouvelle sauce yaourt-citron, ce wrap complet est disponible dès aujourd'hui à 9,90 €. Succombez à la fraîcheur et à la gourmandise réunies dans un seul plat !",
+      featured_image: "https://picsum.photos/seed/wrap/800/400",
+    },
+    {
+      slug: "programme-fidelite-evolution",
+      title: "Votre programme de fidélité évolue",
+      content:
+        "EatQuick améliore son programme de fidélité ! Désormais, chaque euro dépensé vous rapporte 2 points au lieu de 1. Dès 100 points cumulés, bénéficiez d'une remise de 5 € sur votre prochaine commande. Les points sont valables 12 mois et s'accumulent automatiquement sur votre compte. Connectez-vous à votre espace client pour consulter votre solde.",
+      featured_image: "https://picsum.photos/seed/fidelite/800/400",
+    },
+    {
+      slug: "partenariat-ferme-locale",
+      title: "EatQuick s'engage avec une ferme locale",
+      content:
+        "Dans notre démarche de développement durable, EatQuick s'est associé à la Ferme du Vallon, producteur local situé à 30 km de notre restaurant. Tomates, concombres, courgettes et herbes aromatiques : une partie de nos légumes provient désormais directement de leur exploitation. Circuit court, fraîcheur garantie et soutien à l'agriculture locale — une initiative dont nous sommes fiers.",
+      featured_image: "https://picsum.photos/seed/ferme/800/400",
+    },
+    {
+      slug: "menu-estival-2026",
+      title: "Le menu estival 2026 est arrivé !",
+      content:
+        "L'été commence chez EatQuick avec une sélection de recettes légères et colorées. Découvrez notre Salade Pastèque-Feta, notre Bowl Quinoa-Mangue et notre Gaspacho maison à consommer sur place ou à emporter. Des saveurs ensoleillées pour vous accompagner jusqu'en septembre. Le menu estival est disponible tous les jours en quantités limitées — ne tardez pas !",
+      featured_image: "https://picsum.photos/seed/summer/800/400",
+    },
+  ];
+
+  await prisma.news.deleteMany();
+  await prisma.news.createMany({ data: articles });
+  console.log(`Seeded ${articles.length} news articles`);
+}
+
 main()
+  .then(() => seedNews())
   .catch(console.error)
   .finally(() => prisma.$disconnect());

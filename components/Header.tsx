@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/menus", label: "Menu" },
   { href: "/make-your-own-salad", label: "Composer" },
   { href: "/our-recipes", label: "Recettes" },
+  { href: "/news", label: "Actualités" },
   { href: "/contact", label: "Contact" },
 ];
 

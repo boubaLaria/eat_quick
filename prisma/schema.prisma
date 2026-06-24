@@ -110,3 +110,12 @@ model Order {
   userId        String?
   user          User?       @relation(fields: [userId], references: [id])
 }
+
+model News {
+  id             Int      @id @default(autoincrement())
+  slug           String   @unique
+  title          String
+  content        String
+  featured_image String
+  createdAt      DateTime @default(now())
+}

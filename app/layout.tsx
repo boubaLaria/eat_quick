@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -23,11 +24,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${nunito.variable} h-full`}>
-      <body className="min-h-full flex flex-col font-sans antialiased bg-stone-50 text-stone-800">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </body>
+      <Suspense fallback={null}>
+        <body className="min-h-full flex flex-col font-sans antialiased bg-stone-50 text-stone-800">
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </body>
+      </Suspense>
     </html>
   );
 }

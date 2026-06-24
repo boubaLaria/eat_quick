@@ -1,3 +1,6 @@
+"use cache";
+import { cacheLife } from "next/cache";
+
 export const metadata = {
   title: "Opening Hours — EatQuick",
 };
@@ -13,9 +16,11 @@ const opening = [
 ];
 
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const today = days[new Date().getDay()];
 
-export default function OpeningTimePage() {
+export default async function OpeningTimePage() {
+  cacheLife("hours");
+  const today = days[new Date().getDay()];
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
       <h1 className="mb-2">Opening Hours</h1>

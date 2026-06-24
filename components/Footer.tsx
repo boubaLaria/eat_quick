@@ -8,7 +8,8 @@ const opening = [
   { day: "Saturday", time: "10am to 3pm - 7pm to 10pm" },
 ];
 
-export default function Footer() {
+export default async function Footer() {
+  "use cache";
   return (
     <footer className="bg-green-900 text-white mt-auto">
       <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
